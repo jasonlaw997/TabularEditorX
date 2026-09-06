@@ -1,5 +1,12 @@
 # Tabular Editor X
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="readme-pic/TabularEditorX-white.png">
+    <img src="readme-pic/TabularEditorX.png" alt="Tabular Editor X logo" width="720">
+  </picture>
+</p>
+
 Tabular Editor X (TEX) is a Windows desktop editor for Power BI, Azure Analysis Services, and SQL Server Analysis Services tabular models. It continues from the open-source Tabular Editor 2 codebase and adds an embedded AI agent, local API and MCP automation, DAX performance analysis, semantic DAX IntelliSense, dependency and relationship canvases, persistent Macros, and an independent WiX installer.
 
 Tabular Editor X is an independently maintained derivative project. It is not an official Tabular Editor 2 or Tabular Editor 3 release. Its executable, installer identity, user-data folders, and Power BI External Tools manifest are separate, so it can coexist with the original Tabular Editor 2.
