@@ -113,6 +113,12 @@ The exact dynamic `tex_model_*` and `tex_dax_*` schemas are published by the act
 
 Persistent Macro C# is not sandboxed. Enabling **Macro Tools** allows eligible persistent Macros to be executed through API/MCP, subject to the Macro context and enabled-expression checks.
 
+## Codex skill
+
+This repository includes the [`tex-mcp-modeling`](tex-mcp-modeling/SKILL.md) Codex skill. It documents instance selection, model and DAX operations, persistent Macro workflows, `dry_run`/`apply` safety, and the explicit model-save boundary for the stable `tex-mcp` server.
+
+To install it as a user skill, copy the complete `tex-mcp-modeling` directory to your Codex skills directory. Keep its `agents` subdirectory together with `SKILL.md`.
+
 ## Local API
 
 TEX also exposes a localhost API for controlled automation. Its feature menu can independently expose Model Tools, DAX Performance, file-based scripts, inline scripts, and Macro Tools. The assigned localhost port is shown in the TEX toolbar. The built-in **Help > API, MCP & Scripting** guide contains endpoint and parameter examples.

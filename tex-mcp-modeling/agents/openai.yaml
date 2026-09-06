@@ -1,0 +1,4 @@
+interface:
+  display_name: "TEX MCP Modeling"
+  short_description: "Use TEX MCP for model, DAX, and persistent Macro work."
+  default_prompt: "Use $tex-mcp-modeling to inspect or modify the current Tabular Editor X model, run DAX, or manage persistent user Macros through the stable MCP bridge."
