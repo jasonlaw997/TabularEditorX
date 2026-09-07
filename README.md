@@ -11,6 +11,8 @@ Tabular Editor X (TEX) is a Windows desktop editor for Power BI, Azure Analysis 
 
 Tabular Editor X is an independently maintained derivative project. It is not an official Tabular Editor 2 or Tabular Editor 3 release. Its executable, installer identity, user-data folders, and Power BI External Tools manifest are separate, so it can coexist with the original Tabular Editor 2.
 
+![Tabular Editor X overview](readme-pic/overview.png)
+
 ## Highlights
 
 - Edit tables, columns, measures, hierarchies, relationships, partitions, roles, perspectives, translations, and other tabular model objects.
@@ -27,6 +29,45 @@ Tabular Editor X is an independently maintained derivative project. It is not an
 ### DAX editing and IntelliSense
 
 ![DAX IntelliSense in the Expression Editor](readme-pic/dax%20IntelliSense.png)
+
+#### DAX IntelliSense and shortcuts
+
+Native DAX IntelliSense provides suggestions for DAX functions, tables, columns, measures, and variables. It is available in the Expression Editor and the Performance DAX Query input when Native DAX IntelliSense is enabled.
+
+##### Completion popup
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl + Space` | Force the suggestion popup to open. |
+| `Up` | Select the previous candidate. |
+| `Down` | Select the next candidate. |
+| `Tab` | Accept the selected candidate. |
+| Mouse click | Accept the clicked candidate. |
+| `Esc` | Close the popup. |
+| `Enter` | Close the popup without accepting its selected candidate. |
+
+##### Documentation and definitions
+
+| Shortcut | Action |
+|---|---|
+| `F12` | Go to a definition or documentation target for the token at the caret. |
+| `Ctrl + Click` | Navigate variables or objects locally when possible; for a DAX function, open Microsoft DAX documentation. |
+| `Alt + Click` | Open dax.guide for a DAX function. |
+
+After a local navigation, use the mouse Back and Forward buttons or `Ctrl + Left Arrow` and `Ctrl + Right Arrow` to move backward or forward through the navigation history.
+
+##### Comments
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl + /` | Toggle line comments for the current line or selection. |
+| `Ctrl + '` | Toggle a block comment for the current selection. |
+
+##### Advanced input
+
+After an appropriate table or column reference, typing `?` can expand distinct values into a SWITCH-oriented editing pattern when the current model context supports it.
+
+Suggestion metadata is refreshed for the active model. Switching models must not reuse stale tables, columns, or measures from the previous model.
 
 ### Embedded Agent
 
@@ -99,10 +140,10 @@ An external MCP client can launch the bridge with the TEX executable:
 
 Start the TEX desktop application and load or connect to a model before using model-dependent tools. The MCP menu in TEX controls which optional tool groups are exposed.
 
-### Exposed MCP tools
+### Exposed tool surface
 
 | Group | Public tools | Purpose |
-| --- | --- | --- |
+|---|---|---|
 | Instance and health | `tex_status`, `tex_current_instance`, `tex_list_instances`, `tex_select_instance`, `tex_clear_instance_selection`, `tex_mcp_self_check` | Discover and select a live TEX window, inspect model readiness, and validate the bridge. |
 | Model tools | `tex_model_context`, `tex_model_*` | Inspect model metadata and perform catalog-defined model operations, including supported create, update, rename, delete, source-edit, save-status, and explicit save workflows. |
 | DAX tools | `tex_dax_query`, `tex_dax_performance_run`, `tex_dax_performance_run_summary`, `tex_dax_history`, `tex_dax_current`, `tex_dax_compare`, and other published `tex_dax_*` tools | Execute read-only DAX queries and inspect performance runs, timings, plans, and comparisons. |
@@ -115,7 +156,7 @@ Persistent Macro C# is not sandboxed. Enabling **Macro Tools** allows eligible p
 
 ## Codex skill
 
-This repository includes the [`tex-mcp-modeling`](tex-mcp-modeling/SKILL.md) Codex skill. It documents instance selection, model and DAX operations, persistent Macro workflows, `dry_run`/`apply` safety, and the explicit model-save boundary for the stable `tex-mcp` server.
+The public repository includes the [`tex-mcp-modeling`](https://github.com/jasonlaw997/TabularEditorX/tree/main/tex-mcp-modeling) Codex skill. It documents instance selection, model and DAX operations, persistent Macro workflows, `dry_run`/`apply` safety, and the explicit model-save boundary for the stable `tex-mcp` server.
 
 To install it as a user skill, copy the complete `tex-mcp-modeling` directory to your Codex skills directory. Keep its `agents` subdirectory together with `SKILL.md`.
 
