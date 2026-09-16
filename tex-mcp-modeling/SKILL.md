@@ -1,6 +1,6 @@
 ---
 name: tex-mcp-modeling
-description: Use when an agent needs to inspect, modify, optimize, or save a Tabular Editor X model, run DAX work, or manage and execute persistent user Macros through the stable Tabular Editor X MCP bridge. This skill covers instance selection, tex_model_*, tex_dax_*, tex_macro_*, and MCP self-checks; use a separate script-testing workflow for temporary C# files.
+description: Use when an agent needs to inspect, modify, optimize, or save a Tabular Editor X model, run DAX work, or manage and execute persistent user Macros through the stable Tabular Editor X MCP bridge. This skill covers instance selection, tex_model_*, tex_dax_*, tex_macro_*, and MCP self-checks; use tex-mcp-script-test for temporary C# file testing.
 ---
 
 # TEX MCP Modeling
@@ -22,13 +22,12 @@ This skill owns:
 
 Do not use this skill to describe the local HTTP API route, `/model-tools/*`, `/dax-performance/*`, or local API port scanning.
 
-## Executable path
+## Path source of truth
 
-1. Prefer the user-level `SKILL_TEX_PATH` environment variable when it is defined and points to the custom `TabularEditorX.exe`.
-2. When working inside this repository, the expected development executable is `TabularEditor\bin\Release\TabularEditorX.exe` under the repository root.
-3. Validate that the resolved file exists and is named `TabularEditorX.exe` before launching it.
-4. Do not silently substitute an installed original `TabularEditor.exe` or a different repository.
-5. If no valid custom executable can be resolved, ask the user for its full path.
+1. Open `../tex-shared-paths/references/paths.md`.
+2. Resolve and validate `SKILL_TEX_PATH`.
+3. Reuse the derived `texExe` when the MCP launch path needs to be described or verified.
+4. If the task requires the custom Tabular Editor X build and `SKILL_TEX_PATH` is missing or invalid, ask the user for the full path and then update it through the shared-paths workflow.
 
 ## Bridge route
 
@@ -40,16 +39,16 @@ Expected launch shape:
 
 This route is about:
 
-- stdio MCP from the client;
-- Tabular Editor X MCP manifest discovery;
-- named-pipe instance selection;
-- forwarding into the in-process Tabular Editor X backend.
+- stdio MCP from the client
+- Tabular Editor X MCP manifest discovery
+- named-pipe instance selection
+- forwarding into the in-process Tabular Editor X backend
 
 ## Route boundaries
 
 - Use this skill only for MCP bridge workflows.
-- Use the exposed MCP tools rather than direct HTTP requests.
-- If Tabular Editor X is not running, start the custom TEX executable, wait for readiness, and then resume MCP.
+- Use the exposed MCP tools rather than describing direct HTTP requests.
+- If Tabular Editor X is not running, switch only to the neutral `tex-model-launcher` workflow and then resume MCP.
 - If no model is loaded, Macro list/get/create/update/delete may continue; model work, DAX execution, and Macro run require model readiness.
 - Do not describe the local API route as a preferred route, backup route, or comparison route inside this skill.
 
@@ -64,7 +63,7 @@ This route is about:
 7. Use `tex_model_*` for model inspection or modification.
 8. Use `tex_dax_query`, `tex_dax_performance_run`, `tex_dax_performance_run_summary`, and other `tex_dax_*` tools for DAX execution and performance analysis.
 9. Use `tex_macro_contexts`, `tex_macro_list`, `tex_macro_get`, `tex_macro_create`, `tex_macro_update`, and `tex_macro_delete` for persistent user-Macro management.
-10. Use `tex_macro_run` only for an existing persistent user Macro while the global **Macro Tools** switch is enabled.
+10. Use `tex_macro_run` only for an existing persistent user Macro while the global `Macro Tools` switch is enabled.
 11. Use `tex_model_get_save_status` after model writes when save state matters.
 12. Use `tex_model_save_model` only when the user explicitly asks to persist the current model source.
 
@@ -79,12 +78,12 @@ This route is about:
 
 If the selected Tabular Editor X instance reports that no model is loaded:
 
-- do not continue with `tex_model_*` writes;
-- do not run DAX or call `tex_macro_run`;
-- Macro list/get/create/update/delete may continue because they operate on the persistent user-Macro catalog;
-- do not guess another transport route;
-- launch or connect TEX to the intended model only when the requested operation requires it;
-- resume the model-dependent operation only after readiness succeeds.
+- do not continue with `tex_model_*` writes
+- do not run DAX or call `tex_macro_run`
+- Macro list/get/create/update/delete may continue because they operate on the persistent user-Macro catalog
+- do not guess another route
+- switch to `tex-model-launcher` only when the requested operation requires a model
+- resume the model-dependent operation only after readiness succeeds
 
 ## Write safety
 
@@ -96,7 +95,7 @@ If the selected Tabular Editor X instance reports that no model is loaded:
 
 ## Persistent user-Macro workflow
 
-The Tabular Editor X UI exposes one **Macro Tools** switch. It synchronizes the internal management and execution feature gates. If `tex_macro_*` tools are missing, ask the user to enable **Macro Tools** in the MCP feature menu and recheck `tex_mcp_self_check` or MCP `tools/list`.
+The Tabular Editor X UI exposes one `Macro Tools` switch. It synchronizes the internal management and execution feature gates. If `tex_macro_*` tools are missing, ask the user to enable `Macro Tools` in the MCP feature menu and recheck `tex_mcp_self_check` or `tools/list`.
 
 ### Management
 
@@ -111,29 +110,30 @@ The Tabular Editor X UI exposes one **Macro Tools** switch. It synchronizes the 
 
 1. Call `tex_macro_run` with `mode: "dry_run"` first and require `executable = true` before apply.
 2. Apply requires the exact latest `expectedDefinitionHash`; run never accepts `force`.
-3. The global **Macro Tools** switch is the sole API/MCP execution permission. When enabled, all persistent user Macros are eligible to run; there is no per-Macro `allowExternalExecution` setting.
+3. The global `Macro Tools` switch is the sole API/MCP execution permission: when enabled, all persistent user Macros are eligible to run; there is no per-Macro `allowExternalExecution` setting.
 4. Choose the Macro selection source explicitly when the current TreeView selection is not the intended target:
    - `selectionMode: "current"` (default) passes the visible TreeView selection unchanged.
    - `selectionMode: "model"` passes the loaded model root and does not require a TreeView selection.
    - `selectionMode: "targets"` requires a non-empty `targets` array and resolves those objects without changing the visible TreeView selection. For example, use `{ "type": "Measure", "table": "Sales", "name": "Revenue" }`; table and column targets use the analogous canonical type and scope fields exposed by the tool schema.
 5. The resolved selection must match the Macro's `validContexts`, and its Enabled expression must evaluate to true for that same selection. Missing, ambiguous, duplicate, or incompatible explicit targets must be corrected rather than bypassed.
-6. Macro C# is not sandboxed. Enabling **Macro Tools** authorizes API/MCP callers to run any eligible persistent user Macro, so state this scope clearly when troubleshooting or explaining the switch.
+6. Macro C# is not sandboxed. Enabling `Macro Tools` authorizes API/MCP callers to run any eligible persistent user Macro, so state this scope clearly when troubleshooting or explaining the switch.
 7. Macro run does not automatically save the model. Save only when the user separately and explicitly requests it.
 
-## Script-testing boundary
+## Script testing boundary
 
-Do not use this skill for temporary or file-based Tabular Editor X C# script testing through `tex_script_*`. Persistent Macro management and execution remain in this skill; temporary script testing should use a separate, explicitly authorized workflow.
+Do not use this skill for temporary or file-based Tabular Editor X C# script testing through `tex_script_*`.
+That workflow belongs to `tex-mcp-script-test`; persistent Macro management and execution remain in this skill.
 
 ## Validation rules
 
-When checking bridge state, confirm the following when present:
+When checking the bridge state, confirm the following when present:
 
-- `transport = tex-named-pipe-mcp`;
-- `backend = in-process`;
-- `modelLoaded = true` for model work;
-- `selectedInstance.processId` matches the intended Tabular Editor X process;
-- feature flags reflect the expected tool surface;
-- when **Macro Tools** is enabled, both Macro feature flags are true and all seven `tex_macro_*` tools are exposed.
+- `transport = tex-named-pipe-mcp`
+- `backend = in-process`
+- `modelLoaded = true` for model work
+- `selectedInstance.processId` matches the intended Tabular Editor X process
+- feature flags reflect the expected tool surface
+- when `Macro Tools` is enabled, both Macro feature flags are true and all seven `tex_macro_*` tools are exposed
 
 ## Common tool groups
 
